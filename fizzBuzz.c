@@ -1,5 +1,5 @@
 //Anota Olmos Oscar David
-// Practica 0
+// Practica 0 FizzBuzz
 
 #include <stdio.h>
 
