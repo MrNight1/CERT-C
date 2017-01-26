@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
 //#if 0
 	//if(write(fd,"hola123.,\n",10)==-1)
 	//	fprintf(stderr,"Error al escribir en el archivo.");
-	if(read(fd,&numero,4))
+	if(read(fd,&numero,sizeof(numero)))
 	    printf("numero: %d\n",numero);
 //#endif
   
