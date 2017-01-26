@@ -1,0 +1,133 @@
+// Anota Olmos Oscar David
+// Practica 11 - Help_me
+
+// Metodo 1 - usando ltrace
+$ ltrace ./help_me
+__libc_start_main(0x804847b, 1, 0xff968e74, 0x8048530 <unfinished ...>
+__isoc99_scanf(0x80485c0, 0xff968d3d, 0xf76dcb48, 1
+)                                  = 0
+strcmp("hola :)", "\215\226\377~\215\226\377\001")                                    = -1 // En esta linea se identifico la funcion strcmp usada para comparar cadenas
+puts("reprobado"reprobado
+)                                                                     = 10
++++ exited (status 10) +++
+
+-----------------------------------------------------------------------------------------------------------------------------------------
+//Metodo 2
+
+$ objdump -T help_me
+
+help_me:     formato del fichero elf32-i386
+
+DYNAMIC SYMBOL TABLE:
+00000000      DF *UND*	00000000  GLIBC_2.0   strcmp
+00000000      DF *UND*	00000000  GLIBC_2.0   puts
+00000000  w   D  *UND*	00000000              __gmon_start__
+00000000      DF *UND*	00000000  GLIBC_2.0   __libc_start_main
+00000000      DF *UND*	00000000  GLIBC_2.7   __isoc99_scanf
+080485bc g    DO .rodata	00000004  Base        _IO_stdin_used
+
+
+$ gdb -q ./help_me
+Leyendo símbolos desde ./help_me...(no se encontraron símbolos de depuración)hecho.
+(gdb) disass main
+Dump of assembler code for function main:
+   0x0804847b <+0>:	lea    0x4(%esp),%ecx
+   0x0804847f <+4>:	and    $0xfffffff0,%esp
+   0x08048482 <+7>:	pushl  -0x4(%ecx)
+   0x08048485 <+10>:	push   %ebp
+   0x08048486 <+11>:	mov    %esp,%ebp
+   0x08048488 <+13>:	push   %ecx
+   0x08048489 <+14>:	sub    $0x94,%esp
+   0x0804848f <+20>:	movl   $0x616c6f68,-0xd(%ebp)
+   0x08048496 <+27>:	movb   $0x0,-0x9(%ebp)
+   0x0804849a <+31>:	movl   $0x646e756d,-0x13(%ebp)
+   0x080484a1 <+38>:	movw   $0x6f,-0xf(%ebp)
+   0x080484a7 <+44>:	movl   $0x72706572,-0x1e(%ebp)
+   0x080484ae <+51>:	movl   $0x6461626f,-0x1a(%ebp)
+   0x080484b5 <+58>:	movw   $0x216f,-0x16(%ebp)
+   0x080484bb <+64>:	movb   $0x0,-0x14(%ebp)
+   0x080484bf <+68>:	movl   $0x616c6f68,-0x27(%ebp)
+   0x080484c6 <+75>:	movl   $0x67313120,-0x23(%ebp)
+   0x080484cd <+82>:	movb   $0x0,-0x1f(%ebp)
+   0x080484d1 <+86>:	sub    $0x8,%esp
+   0x080484d4 <+89>:	lea    -0x8b(%ebp),%eax
+   0x080484da <+95>:	push   %eax
+   0x080484db <+96>:	push   $0x80485c0
+   0x080484e0 <+101>:	call   0x8048370 <__isoc99_scanf@plt>
+   0x080484e5 <+106>:	add    $0x10,%esp
+   0x080484e8 <+109>:	sub    $0x8,%esp
+   0x080484eb <+112>:	lea    -0x8b(%ebp),%eax
+   0x080484f1 <+118>:	push   %eax
+   0x080484f2 <+119>:	push   $0x80485c7
+   0x080484f7 <+124>:	call   0x8048330 <strcmp@plt> //Se identifico el bloque de memoria donde se manda a llamar a la funcion strcmp.
+   0x080484fc <+129>:	add    $0x10,%esp
+   0x080484ff <+132>:	test   %eax,%eax
+   0x08048501 <+134>:	jne    0x8048515 <main+154>
+   0x08048503 <+136>:	sub    $0xc,%esp
+   0x08048506 <+139>:	push   $0x80485cf
+   0x0804850b <+144>:	call   0x8048340 <puts@plt>
+   0x08048510 <+149>:	add    $0x10,%esp
+   0x08048513 <+152>:	jmp    0x8048525 <main+170>
+   0x08048515 <+154>:	sub    $0xc,%esp
+   0x08048518 <+157>:	push   $0x80485d6
+   0x0804851d <+162>:	call   0x8048340 <puts@plt>
+   0x08048522 <+167>:	add    $0x10,%esp
+   0x08048525 <+170>:	mov    -0x4(%ebp),%ecx
+   0x08048528 <+173>:	leave  
+   0x08048529 <+174>:	lea    -0x4(%ecx),%esp
+   0x0804852c <+177>:	ret    
+End of assembler dump.
+(gdb) b *0x080484f7 // Se coloca un breakpoint en el bloque de memoria que apunta a call
+Punto de interrupción 2 at 0x80484f7
+(gdb) run //Ejecucion del programa hasta el breakpoint
+Starting program: /home/oscar/Descargas/dia3/help_me 
+hola
+
+Breakpoint 2, 0x080484f7 in main ()
+(gdb) info registers
+eax            0xffffcecd	-12595
+ecx            0x1	1
+edx            0xf7f9787c	-134645636
+ebx            0x0	0
+esp            0xffffceb0	0xffffceb0 // cima de la pila
+ebp            0xffffcf58	0xffffcf58
+esi            0xf7f96000	-134651904
+edi            0xf7f96000	-134651904
+eip            0x80484f7	0x80484f7 <main+124> // bloque del breakpoint
+eflags         0x296	[ PF AF SF IF ]
+cs             0x23	35
+ss             0x2b	43
+ds             0x2b	43
+es             0x2b	43
+fs             0x0	0
+gs             0x63	99
+(gdb) x/12x $esp // Examinar la cima de la pila
+0xffffceb0:	0x080485c7	0xffffcecd	0xf7fd4b48	0x00000001 // Solo nos interesan los 2 primeros bloques ya que strcmp solo opera con 2 argumentos
+0xffffcec0:	0x00000000	0x00000001	0xf7ffd918	0x6c6f680f
+0xffffced0:	0xffff0061	0x00000001	0x000000bf	0xf7e74583
+(gdb) x/4x 0x080485c7
+0x80485c7:	0x616c6f68	0x00293a20	0x20214b4f	0x7200312b
+(gdb) x/4x 0xffffcecd
+0xffffcecd:	0x616c6f68	0x01ffff00	0xbf000000	0x83000000
+(gdb) p/c *0x080485c7  //Empezamos a mostrar los caracteres hasta llegar al fin de cadena
+$2 = 104 'h'
+(gdb) p/c *0x080485c8
+$3 = 111 'o'
+(gdb) p/c *0x080485c9
+$4 = 108 'l'
+(gdb) p/c *0x080485ca
+$5 = 97 'a'
+(gdb) p/c *0x080485cb
+$6 = 32 ' '
+(gdb) p/c *0x080485cc
+$7 = 58 ':'
+(gdb) p/c *0x080485cd
+$8 = 41 ')'
+(gdb) p/c *0x080485ce
+$9 = 0 '\000'
+(gdb) p/c *0xffffcecd
+
+(gdb) quit
+
+
+// Finalmente la contraseña es "hola :)"
